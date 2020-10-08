@@ -66,6 +66,7 @@ app.get("/img/*", async (req, res) => {
 
 app.get("/prefs", async (req, res) => {
   let randomWait = Math.random() * 400 + 800;
+  console.log("[INFO] Waiting " + randomWait + "ms to send prefs.");
   await sleep(randomWait);
   res.send({
     "dark": true

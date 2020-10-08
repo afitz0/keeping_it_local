@@ -1,5 +1,6 @@
 import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 import 'dart:async';
 import 'dart:convert';
@@ -7,7 +8,14 @@ import 'dart:convert';
 final host = "http://localhost:8080";
 
 void main() {
-  runApp(MyApp());
+  runApp(MultiProvider(
+    providers: [
+      FutureProvider(
+        create: (_) async => fetchPrefs(),
+      ),
+    ],
+    child: MyApp(),
+  ));
 }
 
 class MyApp extends StatelessWidget {
@@ -44,22 +52,15 @@ class _MyHomePageState extends State<MyHomePage> {
       body: Center(
         // DON'T DO THIS IN REAL LIFE
         child: FutureBuilder<bool>(
-          future: fetchPrefs(http.Client()),
+          future: fetchPrefs(),
           builder: (context, snapshot) {
             if (!snapshot.hasData) {
               return Center(child: CircularProgressIndicator());
             }
 
-            return FutureBuilder<List<Cloud>>(
-              future: fetchClouds(http.Client(), _isDark),
-              builder: (context, snapshot) {
-                if (snapshot.hasError) print(snapshot.error);
+            _isDark = snapshot.data;
 
-                return snapshot.hasData
-                    ? CloudsList(clouds: snapshot.data)
-                    : Center(child: CircularProgressIndicator());
-              },
-            );
+            return Clouds(dark: _isDark);
           },
         ),
       ),
@@ -73,8 +74,32 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 }
 
-Future<bool> fetchPrefs(http) {
-  var response = http.Client().get(host + '/prefs');
+class Clouds extends StatelessWidget {
+  const Clouds({
+    Key key,
+    @required bool dark,
+  })  : _isDark = dark,
+        super(key: key);
+
+  final bool _isDark;
+
+  @override
+  Widget build(BuildContext context) {
+    return FutureBuilder<List<Cloud>>(
+      future: fetchClouds(http.Client(), _isDark),
+      builder: (context, snapshot) {
+        if (snapshot.hasError) print(snapshot.error);
+
+        return snapshot.hasData
+            ? CloudsList(clouds: snapshot.data)
+            : Center(child: CircularProgressIndicator());
+      },
+    );
+  }
+}
+
+Future<bool> fetchPrefs() async {
+  final response = await http.Client().get(host + '/prefs');
   final parsed = jsonDecode(response.body);
   return parsed["dark"];
 }

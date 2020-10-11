@@ -69,7 +69,7 @@ app.get("/prefs", async (req, res) => {
   console.log("[INFO] Waiting " + randomWait + "ms to send prefs.");
   await sleep(randomWait);
   res.send({
-    "dark": true
+    "dark": false
   });
 });
 

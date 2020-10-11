@@ -1,6 +1,7 @@
 import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'dart:async';
 import 'dart:convert';
@@ -10,8 +11,12 @@ final host = "http://localhost:8080";
 void main() {
   runApp(MultiProvider(
     providers: [
-      FutureProvider(
-        create: (_) async => fetchPrefs(),
+      FutureProvider<bool>(
+        create: (_) async => fetchDarkModePref(),
+        catchError: (context, error) {
+          print(error.toString());
+          return false;
+        },
       ),
     ],
     child: MyApp(),
@@ -45,24 +50,14 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   Widget build(BuildContext context) {
+    _isDark = Provider.of<bool>(context);
+
     return Scaffold(
       appBar: AppBar(
         title: Text("Keeping. It. Local."),
       ),
       body: Center(
-        // DON'T DO THIS IN REAL LIFE
-        child: FutureBuilder<bool>(
-          future: fetchPrefs(),
-          builder: (context, snapshot) {
-            if (!snapshot.hasData) {
-              return Center(child: CircularProgressIndicator());
-            }
-
-            _isDark = snapshot.data;
-
-            return Clouds(dark: _isDark);
-          },
-        ),
+        child: Clouds(dark: _isDark),
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
@@ -98,11 +93,17 @@ class Clouds extends StatelessWidget {
   }
 }
 
-Future<bool> fetchPrefs() async {
+Future<bool> fetchDarkModePref() async {
   final response = await http.Client().get(host + '/prefs');
   final parsed = jsonDecode(response.body);
   return parsed["dark"];
 }
+
+// Future<bool> fetchDarkModePref() async {
+//   SharedPreferences prefs = await SharedPreferences.getInstance();
+//   bool isDark = (prefs.getBool('isDark') ?? false);
+//   return isDark;
+// }
 
 class Cloud {
   final String url;
@@ -151,6 +152,7 @@ class CloudsList extends StatelessWidget {
     var screenHeight = MediaQuery.of(context).size.height;
 
     return ListView.separated(
+      cacheExtent: 0,
       separatorBuilder: (context, index) => SizedBox(
         height: 10,
       ),

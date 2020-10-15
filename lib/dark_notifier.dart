@@ -4,6 +4,7 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+// TODO move this into a shared constants file
 final host = "http://localhost:8080";
 
 class PrefsState {
@@ -17,15 +18,6 @@ class DarkNotifier with ChangeNotifier {
 
   DarkNotifier() {
     _loadDarkPref();
-  }
-
-  bool get isDark => _currentPrefs.darkMode;
-
-  set darkMode(bool newValue) {
-    if (newValue == _currentPrefs.darkMode) return;
-    _currentPrefs = PrefsState(darkMode: newValue);
-    notifyListeners();
-    _saveDarkPref();
   }
 
   Future<void> _loadDarkPref() async {
@@ -43,10 +35,18 @@ class DarkNotifier with ChangeNotifier {
 
   Future<void> _saveDarkPref() async {
     // await SharedPreferences.getInstance().then((prefs) {
-    //   prefs.setBool('userDarkMode', _currentPrefs.darkMode);
+    //   prefs.setBool('isDarkMode', _currentPrefs.darkMode);
     // });
 
-    await http.Client()
-        .get(host + '/prefs?set=' + _currentPrefs.darkMode.toString());
+    http.Client().get(host + '/prefs?set=' + _currentPrefs.darkMode.toString());
+  }
+
+  bool get isDark => _currentPrefs.darkMode;
+
+  set darkMode(bool newValue) {
+    if (newValue == _currentPrefs.darkMode) return;
+    _currentPrefs = PrefsState(darkMode: newValue);
+    notifyListeners();
+    _saveDarkPref();
   }
 }

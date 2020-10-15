@@ -64,7 +64,7 @@ app.get("/img/*", async (req, res) => {
     }
   }
 
-  console.log("[INFO] Random wait is enabled. Waiting " + randomWait + "ms before sending file.");
+  console.log("[INFO] Waiting " + randomWait + "ms before sending file.");
   await sleep(randomWait);
   res.sendFile(req.params[0], options);
 });

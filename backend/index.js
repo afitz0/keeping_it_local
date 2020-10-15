@@ -1,12 +1,11 @@
+import express from 'express';
+import multer from 'multer';
+import cors from 'cors';
+import file_type from 'file-type';
+import * as fs from 'fs';
+import * as path from 'path';
 
-const multer = require('multer');
-const express = require('express');
 const app = express();
-const fs = require('fs');
-const path = require('path');
-const cors = require('cors');
-const file_type = require('file-type');
-
 app.use(cors())
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
@@ -14,6 +13,12 @@ app.use(multer().none());
 
 const RELATIVE_IMG_ROOT = "public/img";
 const RANDOM_WAIT_MAX_MS = 5000;
+
+import { dirname } from 'path';
+import { fileURLToPath } from 'url';
+const __dirname = dirname(fileURLToPath(import.meta.url));
+
+var isDark = true;
 
 app.get("/list", async (req, res) => {
   let pathPrefix = "/";
@@ -65,11 +70,15 @@ app.get("/img/*", async (req, res) => {
 });
 
 app.get("/prefs", async (req, res) => {
+  if (req.query["set"]) {
+    isDark = (req.query["set"] === 'true');
+  }
+
   let randomWait = Math.random() * 400 + 800;
-  console.log("[INFO] Waiting " + randomWait + "ms to send prefs.");
+  console.log("[INFO] Waiting " + randomWait + "ms to send back dark pref (" + isDark + ").");
   await sleep(randomWait);
   res.send({
-    "dark": false
+    "dark": isDark
   });
 });
 

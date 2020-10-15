@@ -1,5 +1,7 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
+import 'package:keeping_it_local/dark_notifier.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -11,12 +13,8 @@ final host = "http://localhost:8080";
 void main() {
   runApp(MultiProvider(
     providers: [
-      FutureProvider<bool>(
-        create: (_) async => fetchDarkModePref(),
-        catchError: (context, error) {
-          print(error.toString());
-          return false;
-        },
+      ChangeNotifierProvider(
+        create: (_) => DarkNotifier(),
       ),
     ],
     child: MyApp(),
@@ -30,6 +28,13 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Local Data Access Demo',
       theme: ThemeData(
+        brightness: Provider.of<DarkNotifier>(context).isDark
+            ? Brightness.dark
+            : Brightness.light,
+        canvasColor: Theme.of(context).brightness == Brightness.dark ||
+                Provider.of<DarkNotifier>(context).isDark
+            ? Colors.black45
+            : Colors.white,
         primarySwatch: Colors.blue,
         visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
@@ -46,22 +51,24 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  bool _isDark = false;
-
   @override
   Widget build(BuildContext context) {
-    _isDark = Provider.of<bool>(context);
-
     return Scaffold(
       appBar: AppBar(
         title: Text("Keeping. It. Local."),
       ),
-      body: Center(
-        child: Clouds(dark: _isDark),
+      body: Consumer<DarkNotifier>(
+        builder: (context, dark, child) {
+          return Center(
+            child: Clouds(dark: dark.isDark),
+          );
+        },
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          setState(() => _isDark = !_isDark);
+          bool isDark =
+              Provider.of<DarkNotifier>(context, listen: false).isDark;
+          Provider.of<DarkNotifier>(context, listen: false).darkMode = !isDark;
         },
         child: Icon(Icons.brightness_medium),
       ),
@@ -81,7 +88,7 @@ class Clouds extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return FutureBuilder<List<Cloud>>(
-      future: fetchClouds(http.Client(), _isDark),
+      future: fetchClouds(_isDark),
       builder: (context, snapshot) {
         if (snapshot.hasError) print(snapshot.error);
 
@@ -92,18 +99,6 @@ class Clouds extends StatelessWidget {
     );
   }
 }
-
-Future<bool> fetchDarkModePref() async {
-  final response = await http.Client().get(host + '/prefs');
-  final parsed = jsonDecode(response.body);
-  return parsed["dark"];
-}
-
-// Future<bool> fetchDarkModePref() async {
-//   SharedPreferences prefs = await SharedPreferences.getInstance();
-//   bool isDark = (prefs.getBool('isDark') ?? false);
-//   return isDark;
-// }
 
 class Cloud {
   final String url;
@@ -130,10 +125,10 @@ List<Cloud> parseClouds(String responseBody) {
   return parsed["clouds"].map<Cloud>((json) => Cloud.fromJson(json)).toList();
 }
 
-Future<List<Cloud>> fetchClouds(http.Client client, bool darkMode) async {
+Future<List<Cloud>> fetchClouds(bool darkMode) async {
   try {
     final response =
-        await client.get(host + '/list?dark=' + darkMode.toString());
+        await http.Client().get(host + '/list?dark=' + darkMode.toString());
     return parseClouds(response.body);
   } catch (e) {
     print(e);
@@ -158,14 +153,18 @@ class CloudsList extends StatelessWidget {
       ),
       itemCount: clouds.length,
       padding: EdgeInsets.all(8.0),
+      // TODO clean this up, break it up.
       itemBuilder: (context, index) {
         return SizedBox(
           height: screenHeight * .2,
           child: PhysicalModel(
             shadowColor: Colors.lightBlue,
             elevation: 8.0,
-            color: Colors.white,
+            color: Provider.of<DarkNotifier>(context).isDark
+                ? Colors.black26
+                : Colors.white,
             borderRadius: BorderRadius.all(Radius.circular(20)),
+            // TODO "live code #3" add an "onTap" feature that downloads a big file.
             child: DecoratedBox(
               decoration: BoxDecoration(
                 border: Border.all(color: Colors.lightBlue),
@@ -223,9 +222,19 @@ class CloudImage extends StatelessWidget {
   Widget build(BuildContext context) {
     return ClipRRect(
       borderRadius: BorderRadius.all(Radius.circular(90)),
+
+      // TODO make this a snippet
+      // child: CachedNetworkImage(
+      //   imageUrl: imageUrl,
+      //   placeholder: (context, url) =>
+      //       Center(child: CircularProgressIndicator()),
+      //   errorWidget: (context, url, error) => Icon(Icons.error),
+      //   fadeInDuration: const Duration(milliseconds: 100),
+      // ),
+      // TODO "live code #2" switch this to a CachedNetworkImage.
       child: Image.network(
         imageUrl,
-        loadingBuilder: (_, Widget child, ImageChunkEvent loadingProgress) {
+        loadingBuilder: (_, child, loadingProgress) {
           if (loadingProgress == null) {
             return child;
           }

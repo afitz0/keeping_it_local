@@ -5,17 +5,17 @@ import 'package:sqflite/sqflite.dart';
 class _EditableHomeState extends State<EditableHome> {
   DataProvider data = DataProvider();
 
-  List placeholderRows = [
-    {
+  List<Cloud> placeholderRows = [
+    Cloud.fromMap({
       "name": 'Dash',
       "type": 'Stratus',
       "lastSeen": '2020-10-15',
-    },
-    {
+    }),
+    Cloud.fromMap({
       "name": 'Fitz',
       "type": 'Cirrus',
       "lastSeen": '2020-10-15',
-    },
+    }),
   ];
 
   List columns = [
@@ -27,14 +27,13 @@ class _EditableHomeState extends State<EditableHome> {
   @override
   Widget build(BuildContext context) {
     return FutureBuilder<List<Cloud>>(
-      future: data.getAll(),
+      future: Future<List<Cloud>>(() => placeholderRows),
       builder: (context, snapshot) {
         if (!snapshot.hasData) {
           return Center(child: CircularProgressIndicator());
         }
 
-        //List rows = snapshot.data.map((e) => e.toMap()).toList();
-        List rows = placeholderRows;
+        List rows = snapshot.data.map((e) => e.toMap()).toList();
 
         return Editable(
           columns: columns,

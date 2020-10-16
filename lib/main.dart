@@ -98,6 +98,33 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 }
 
+class CloudImage extends StatelessWidget {
+  const CloudImage({
+    Key key,
+    @required this.imageUrl,
+  }) : super(key: key);
+
+  final String imageUrl;
+
+  @override
+  Widget build(BuildContext context) {
+    return ClipRRect(
+      borderRadius: BorderRadius.all(Radius.circular(90)),
+
+      // TODO "live code #2" switch this to a CachedNetworkImage.
+      child: Image.network(
+        imageUrl,
+        loadingBuilder: (_, child, loadingProgress) {
+          if (loadingProgress == null) {
+            return child;
+          }
+          return Center(child: CircularProgressIndicator());
+        },
+      ),
+    );
+  }
+}
+
 class Clouds extends StatelessWidget {
   const Clouds({
     Key key,
@@ -186,7 +213,6 @@ class CloudsList extends StatelessWidget {
                 ? Colors.black26
                 : Colors.white,
             borderRadius: BorderRadius.all(Radius.circular(20)),
-            // TODO "live code #3" add an "onTap" feature that downloads a big file.
             child: DecoratedBox(
               decoration: BoxDecoration(
                 border: Border.all(color: Colors.lightBlue),
@@ -232,37 +258,4 @@ class CloudsList extends StatelessWidget {
   }
 }
 
-class CloudImage extends StatelessWidget {
-  const CloudImage({
-    Key key,
-    @required this.imageUrl,
-  }) : super(key: key);
 
-  final String imageUrl;
-
-  @override
-  Widget build(BuildContext context) {
-    return ClipRRect(
-      borderRadius: BorderRadius.all(Radius.circular(90)),
-
-      // TODO make this a snippet
-      // child: CachedNetworkImage(
-      //   imageUrl: imageUrl,
-      //   placeholder: (context, url) =>
-      //       Center(child: CircularProgressIndicator()),
-      //   errorWidget: (context, url, error) => Icon(Icons.error),
-      //   fadeInDuration: const Duration(milliseconds: 100),
-      // ),
-      // TODO "live code #2" switch this to a CachedNetworkImage.
-      child: Image.network(
-        imageUrl,
-        loadingBuilder: (_, child, loadingProgress) {
-          if (loadingProgress == null) {
-            return child;
-          }
-          return Center(child: CircularProgressIndicator());
-        },
-      ),
-    );
-  }
-}

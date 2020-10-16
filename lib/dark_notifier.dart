@@ -6,12 +6,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'constants.dart';
 
-class PrefsState {
-  final bool darkMode;
-
-  const PrefsState({this.darkMode = false});
-}
-
 class DarkNotifier with ChangeNotifier {
   PrefsState _currentPrefs = PrefsState(darkMode: false);
 
@@ -20,11 +14,6 @@ class DarkNotifier with ChangeNotifier {
   }
 
   Future<void> _loadDarkPref() async {
-    // await SharedPreferences.getInstance().then((prefs) {
-    //   bool darkPref = prefs.getBool('isDarkMode') ?? false;
-    //   _currentPrefs = PrefsState(darkMode: darkPref);
-    // });
-
     final response = await http.Client().get(backendHost + '/prefs');
     final parsed = jsonDecode(response.body);
     _currentPrefs = PrefsState(darkMode: parsed["dark"]);
@@ -33,10 +22,6 @@ class DarkNotifier with ChangeNotifier {
   }
 
   Future<void> _saveDarkPref() async {
-    // await SharedPreferences.getInstance().then((prefs) {
-    //   prefs.setBool('isDarkMode', _currentPrefs.darkMode);
-    // });
-
     http.Client()
         .get(backendHost + '/prefs?set=' + _currentPrefs.darkMode.toString());
   }
@@ -49,4 +34,10 @@ class DarkNotifier with ChangeNotifier {
     notifyListeners();
     _saveDarkPref();
   }
+}
+
+class PrefsState {
+  final bool darkMode;
+
+  const PrefsState({this.darkMode = false});
 }

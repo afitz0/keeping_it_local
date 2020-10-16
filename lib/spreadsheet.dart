@@ -2,11 +2,55 @@ import 'package:flutter/material.dart';
 import 'package:editable/editable.dart';
 import 'package:sqflite/sqflite.dart';
 
-List columns = [
-  {"title": 'Name', 'index': 1, 'key': 'name'},
-  {"title": 'Type', 'index': 2, 'key': 'type'},
-  {"title": 'Last Seen', 'index': 3, 'key': 'lastSeen'},
-];
+class _EditableHomeState extends State<EditableHome> {
+  DataProvider data = DataProvider();
+
+  List placeholderRows = [
+    {
+      "name": 'Dash',
+      "type": 'Stratus',
+      "lastSeen": '2020-10-15',
+    },
+    {
+      "name": 'Fitz',
+      "type": 'Cirrus',
+      "lastSeen": '2020-10-15',
+    },
+  ];
+
+  List columns = [
+    {"title": 'Name', 'index': 1, 'key': 'name'},
+    {"title": 'Type', 'index': 2, 'key': 'type'},
+    {"title": 'Last Seen', 'index': 3, 'key': 'lastSeen'},
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    return FutureBuilder<List<Cloud>>(
+      future: data.getAll(),
+      builder: (context, snapshot) {
+        if (!snapshot.hasData) {
+          return Center(child: CircularProgressIndicator());
+        }
+
+        //List rows = snapshot.data.map((e) => e.toMap()).toList();
+        List rows = placeholderRows;
+
+        return Editable(
+          columns: columns,
+          rows: rows,
+          columnRatio: .28,
+          showCreateButton: true,
+          createButtonColor: Colors.blue,
+          showSaveIcon: true,
+          onRowSaved: (row) {
+            // TODO
+          },
+        );
+      },
+    );
+  }
+}
 
 class Spreadsheet extends StatelessWidget {
   @override
@@ -27,50 +71,6 @@ class Spreadsheet extends StatelessWidget {
 class EditableHome extends StatefulWidget {
   @override
   _EditableHomeState createState() => _EditableHomeState();
-}
-
-class _EditableHomeState extends State<EditableHome> {
-  List placeholderRows = [
-    {
-      "name": 'Dash',
-      "type": 'Stratus',
-      "lastSeen": '2020-10-15',
-    },
-    {
-      "name": 'Fitz',
-      "type": 'Cirrus',
-      "lastSeen": '2020-10-15',
-    },
-  ];
-
-  DataProvider data = DataProvider();
-
-  @override
-  Widget build(BuildContext context) {
-    return FutureBuilder<List<Cloud>>(
-      future: data.getAll(),
-      builder: (context, snapshot) {
-        if (!snapshot.hasData) {
-          return Center(child: CircularProgressIndicator());
-        }
-
-        List rows = snapshot.data.map((e) => e.toMap()).toList();
-        // List rows = placeholderRows;
-
-        return Editable(
-          columns: columns,
-          rows: rows,
-          columnRatio: .28,
-          showCreateButton: true,
-          createButtonColor: Colors.blue,
-          showSaveIcon: true,
-          onRowSaved: (row) {
-            if (row != 'no edit') data.insert(Cloud.fromMap(row));
-          },
-        );
-      },
-    );
-  }
 }
 
 class Cloud {

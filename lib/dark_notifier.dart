@@ -1,11 +1,10 @@
 import 'dart:async';
-import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'package:http/http.dart' as http;
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-// TODO move this into a shared constants file
-final host = "http://localhost:8080";
+import 'constants.dart';
 
 class PrefsState {
   final bool darkMode;
@@ -26,7 +25,7 @@ class DarkNotifier with ChangeNotifier {
     //   _currentPrefs = PrefsState(darkMode: darkPref);
     // });
 
-    final response = await http.Client().get(host + '/prefs');
+    final response = await http.Client().get(backendHost + '/prefs');
     final parsed = jsonDecode(response.body);
     _currentPrefs = PrefsState(darkMode: parsed["dark"]);
 
@@ -38,7 +37,8 @@ class DarkNotifier with ChangeNotifier {
     //   prefs.setBool('isDarkMode', _currentPrefs.darkMode);
     // });
 
-    http.Client().get(host + '/prefs?set=' + _currentPrefs.darkMode.toString());
+    http.Client()
+        .get(backendHost + '/prefs?set=' + _currentPrefs.darkMode.toString());
   }
 
   bool get isDark => _currentPrefs.darkMode;

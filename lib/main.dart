@@ -1,14 +1,15 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
-import 'package:keeping_it_local/dark_notifier.dart';
 import 'package:provider/provider.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+
+import 'package:keeping_it_local/dark_notifier.dart';
+import 'package:keeping_it_local/constants.dart';
+import 'package:keeping_it_local/spreadsheet.dart';
+
+import 'package:cached_network_image/cached_network_image.dart';
 
 import 'dart:async';
 import 'dart:convert';
-
-final host = "http://localhost:8080";
 
 void main() {
   runApp(MultiProvider(
@@ -55,7 +56,7 @@ class _MyHomePageState extends State<MyHomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("Keeping. It. Local."),
+        title: Text("Keeping. It Local."),
       ),
       body: Consumer<DarkNotifier>(
         builder: (context, dark, child) {
@@ -71,6 +72,27 @@ class _MyHomePageState extends State<MyHomePage> {
           Provider.of<DarkNotifier>(context, listen: false).darkMode = !isDark;
         },
         child: Icon(Icons.brightness_medium),
+      ),
+      drawer: Drawer(
+        child: Container(
+          child: ListView(
+            children: <Widget>[
+              DrawerHeader(
+                child: Text('Other Cloudy Things'),
+              ),
+              ListTile(
+                title: Text('Cloudy Data Input'),
+                onTap: () => {
+                  Navigator.pop(context),
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => Spreadsheet()),
+                  ),
+                },
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -127,8 +149,8 @@ List<Cloud> parseClouds(String responseBody) {
 
 Future<List<Cloud>> fetchClouds(bool darkMode) async {
   try {
-    final response =
-        await http.Client().get(host + '/list?dark=' + darkMode.toString());
+    final response = await http.Client()
+        .get(backendHost + '/list?dark=' + darkMode.toString());
     return parseClouds(response.body);
   } catch (e) {
     print(e);
@@ -176,8 +198,8 @@ class CloudsList extends StatelessWidget {
                   children: [
                     Expanded(
                       flex: 2,
-                      child:
-                          CloudImage(imageUrl: host + '/' + clouds[index].url),
+                      child: CloudImage(
+                          imageUrl: backendHost + '/' + clouds[index].url),
                     ),
                     SizedBox(width: 10),
                     Expanded(

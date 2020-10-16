@@ -109,19 +109,15 @@ class CloudImage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ClipRRect(
-      borderRadius: BorderRadius.all(Radius.circular(90)),
+        borderRadius: BorderRadius.all(Radius.circular(90)),
 
-      // TODO "live code #2" switch this to a CachedNetworkImage.
-      child: Image.network(
-        imageUrl,
-        loadingBuilder: (_, child, loadingProgress) {
-          if (loadingProgress == null) {
-            return child;
-          }
-          return Center(child: CircularProgressIndicator());
-        },
-      ),
-    );
+        // TODO "live code #2" switch this to a CachedNetworkImage.
+        child: CachedNetworkImage(
+          imageUrl: imageUrl,
+          placeholder: (_, __) => Center(child: CircularProgressIndicator()),
+          fadeInDuration: Duration(milliseconds: 0),
+          fadeOutDuration: Duration(milliseconds: 0),
+        ));
   }
 }
 
@@ -257,5 +253,3 @@ class CloudsList extends StatelessWidget {
     );
   }
 }
-
-

@@ -27,7 +27,7 @@ class _EditableHomeState extends State<EditableHome> {
   @override
   Widget build(BuildContext context) {
     return FutureBuilder<List<Cloud>>(
-      future: Future<List<Cloud>>(() => placeholderRows),
+      future: data.getAll(),
       builder: (context, snapshot) {
         if (!snapshot.hasData) {
           return Center(child: CircularProgressIndicator());
@@ -44,6 +44,7 @@ class _EditableHomeState extends State<EditableHome> {
           showSaveIcon: true,
           onRowSaved: (row) {
             // TODO
+            if (row != 'no edit') data.insert(Cloud.fromMap(row));
           },
         );
       },

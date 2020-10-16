@@ -14,16 +14,18 @@ class DarkNotifier with ChangeNotifier {
   }
 
   Future<void> _loadDarkPref() async {
-    final response = await http.Client().get(backendHost + '/prefs');
-    final parsed = jsonDecode(response.body);
-    _currentPrefs = PrefsState(darkMode: parsed["dark"]);
+    await SharedPreferences.getInstance().then((prefs) {
+      bool darkPref = prefs.getBool('isDark') ?? false;
+      _currentPrefs = PrefsState(darkMode: darkPref);
+    });
 
     notifyListeners();
   }
 
   Future<void> _saveDarkPref() async {
-    http.Client()
-        .get(backendHost + '/prefs?set=' + _currentPrefs.darkMode.toString());
+    await SharedPreferences.getInstance().then((prefs) {
+      prefs.setBool('isDark', _currentPrefs.darkMode);
+    });
   }
 
   bool get isDark => _currentPrefs.darkMode;

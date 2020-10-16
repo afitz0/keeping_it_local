@@ -27,7 +27,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Local Data Access Demo',
+      title: 'Keeping. It. Local.',
       theme: ThemeData(
         brightness: Provider.of<DarkNotifier>(context).isDark
             ? Brightness.dark
@@ -56,7 +56,7 @@ class _MyHomePageState extends State<MyHomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("Keeping. It Local."),
+        title: Text("Keeping. It. Local."),
       ),
       body: Consumer<DarkNotifier>(
         builder: (context, dark, child) {
